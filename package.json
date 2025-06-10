@@ -1,0 +1,55 @@
+{
+  "name": "react-highlight-html",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "scripts": {
+    "prepare": "npm run build",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc",
+    "ci": "npm run build && npm run check-format && npm run check-exports",
+    "format": "prettier --write .",
+    "check-format": "prettier --check .",
+    "check-exports": "attw --pack ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ngocha2607/react-highlight-html.git"
+  },
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "react-highlight",
+    "highlight-text",
+    "highlight-html",
+    "highlight"
+  ],
+  "author": "Ngocha2607 <ngocha2k.ln@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Ngocha2607/react-highlight-html/issues"
+  },
+  "homepage": "https://github.com/Ngocha2607/react-highlight-html#readme",
+  "description": "",
+  "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.2",
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.1.7",
+    "prettier": "^3.5.3",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "antd": "^5.26.0",
+    "clsx": "^2.1.1",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "import": "./dist/index.js",
+      "default": "./dist/index.cjs"
+    }
+  }
+}
