@@ -15,7 +15,6 @@ interface Props {
   initialHTML: string;
   storageKey: string;
   isShowNote?: boolean;
-  isSaveSessionStorage?: boolean;
   className?: string;
 }
 
@@ -23,7 +22,6 @@ const HighlightableHTML: React.FC<Props> = ({
   initialHTML,
   storageKey,
   isShowNote = false,
-  isSaveSessionStorage = false,
   className,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -47,11 +45,6 @@ const HighlightableHTML: React.FC<Props> = ({
   );
   const [highlightRect, setHighlightRect] = useState<DOMRect | null>(null);
   const [lastRect, setLastRect] = useState<DOMRect | null>(null);
-  // Giữ rect position tối ưu cho tooltip
-  const [tooltipPosition, setTooltipPosition] = useState<{
-    top: number;
-    left: number;
-  } | null>(null);
 
   // Debounce setSelectionRect để tránh scroll nháy
   const updateSelectionRect = (rect: DOMRect | null) => {
@@ -59,31 +52,17 @@ const HighlightableHTML: React.FC<Props> = ({
     setDebounceTimeout(
       setTimeout(() => {
         setSelectionRect(rect);
-        if (rect) {
-          // Đẩy tooltip lên trên selection một chút
-          setTooltipPosition({
-            top: rect.top - 40,
-            left: rect.left + rect.width / 2,
-          });
-        } else {
-          setTooltipPosition(null);
-        }
       }, DEBOUNCE_DELAY),
     );
   };
 
-  // Load highlights from sessionStorage only once when component mounts
+  // Load highlights from sessionStorage
   useEffect(() => {
-    // if (!isSaveSessionStorage) return
     const raw = sessionStorage.getItem(storageKey);
     if (raw) {
       try {
         const parsed = JSON.parse(raw);
-        const restoredHTML = restoreHighlightsFromOffsetsPreserveHTML(
-          parsed.htmlContent || initialHTML,
-          parsed.highlights || [],
-        );
-        setHtml(restoredHTML);
+        setHtml(parsed.htmlContent || initialHTML);
         setHighlights(parsed.highlights || []);
       } catch (err) {
         // console.error('Error loading highlights:', err)
@@ -91,16 +70,20 @@ const HighlightableHTML: React.FC<Props> = ({
     } else {
       setHtml(initialHTML);
     }
-  }, [initialHTML]);
+  }, [initialHTML, storageKey]);
 
-  // Save highlights to sessionStorage only when highlights change
+  // Save highlights to sessionStorage
   useEffect(() => {
-    // if (!isSaveSessionStorage) return
-    sessionStorage.setItem(
-      storageKey,
-      JSON.stringify({ htmlContent: initialHTML, highlights }),
-    );
-  }, [highlights, initialHTML]);
+    if (containerRef.current) {
+      sessionStorage.setItem(
+        storageKey,
+        JSON.stringify({
+          htmlContent: containerRef.current.innerHTML,
+          highlights,
+        }),
+      );
+    }
+  }, [highlights, storageKey]);
 
   const handleMouseUp = () => {
     const selectionObj = window.getSelection();
@@ -116,7 +99,7 @@ const HighlightableHTML: React.FC<Props> = ({
     const container = containerRef.current;
     if (!container || !container.contains(selectionObj.anchorNode)) return;
 
-    // So sánh rect mới với rect cũ để tránh set lại nhiều lần khi rect không thay đổi
+    // So sánh rect mới với rect cũ
     if (
       lastRect &&
       Math.abs(rect.top - lastRect.top) < 1 &&
@@ -124,7 +107,6 @@ const HighlightableHTML: React.FC<Props> = ({
       Math.abs(rect.width - lastRect.width) < 1 &&
       Math.abs(rect.height - lastRect.height) < 1
     ) {
-      // Rect không thay đổi đáng kể, không set state nữa
       return;
     }
 
@@ -211,6 +193,43 @@ const HighlightableHTML: React.FC<Props> = ({
     };
   }, [selectedHighlightId]);
 
+  // Handle click outside for text selection
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+
+      if (!selection) return;
+
+      // Check if clicked inside the highlight popover
+      const popoverElement = document.querySelector(
+        '.ant-popover.highlight-popover',
+      );
+      if (popoverElement && popoverElement.contains(target)) return;
+
+      // Check if clicked inside the container
+      const container = containerRef.current;
+      if (container && container.contains(target)) {
+        // If clicking inside container, let the normal mouseUp handler deal with it
+        return;
+      }
+
+      // Clicked outside container, clear selection
+      setSelection(null);
+      setSelectionRect(null);
+
+      // Clear browser selection as well
+      const browserSelection = window.getSelection();
+      if (browserSelection) {
+        browserSelection.removeAllRanges();
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [selection]);
+
   // Cập nhật handleHighlightClick
   const handleHighlightClick = (e: React.MouseEvent) => {
     const mark = (e.target as HTMLElement).closest('mark[data-id]');
@@ -229,13 +248,6 @@ const HighlightableHTML: React.FC<Props> = ({
     setSelectedHighlightId(id);
     setHighlightRect(rect);
   };
-  // const handleHighlightClick = (e: React.MouseEvent) => {
-  //   const mark = (e.target as HTMLElement).closest('mark[data-id]')
-  //   if (!mark) return
-  //   const rect = mark.getBoundingClientRect()
-  //   setSelectedHighlightId(mark.getAttribute('data-id'))
-  //   setHighlightRect(rect)
-  // }
 
   const handleRemoveHighlight = () => {
     if (!selectedHighlightId) return;
@@ -251,11 +263,9 @@ const HighlightableHTML: React.FC<Props> = ({
     setSelectedHighlightId(null);
     setHighlightRect(null);
   };
+
   // Scroll tới highlight trong danh sách
   // Replace the empty scrollToHighlight function with this implementation:
-
-  // Replace the empty scrollToHighlight function with this implementation:
-
   const scrollToHighlight = (id: string) => {
     const container = containerRef.current;
     if (!container) return;
@@ -316,13 +326,20 @@ const HighlightableHTML: React.FC<Props> = ({
   const onClose = () => {
     setOpen(false);
   };
+  const calcdimensions = (width: number) => {
+    if (width > 900) {
+      return width / 2 + 330;
+    }
+    return width / 2 - 65;
+  };
+
   return (
     <div
       onMouseUp={handleMouseUp}
       style={{ position: 'relative' }}
       onClick={handleHighlightClick}
     >
-      {selection && selectionRect && (
+      {!selectedHighlightId && selection && selectionRect && (
         <Popover
           classNames={{
             root: 'highlight-popover',
@@ -347,8 +364,7 @@ const HighlightableHTML: React.FC<Props> = ({
             left:
               selectionRect.left +
               window.scrollX +
-              selectionRect.width / 2 -
-              60,
+              calcdimensions(selectionRect.width),
             zIndex: 9999,
           }}
         >
@@ -437,8 +453,7 @@ const HighlightableHTML: React.FC<Props> = ({
             left:
               highlightRect.left +
               window.scrollX +
-              highlightRect.width / 2 -
-              80,
+              calcdimensions(highlightRect.width),
             zIndex: 9999,
           }}
           open={true}

@@ -1,23 +1,16 @@
 {
   "compilerOptions": {
-    /* Base Options: */
+    "target": "ES2020",
+    "module": "preserve",
+    "declaration": true,
+    "declarationDir": "dist",
     "esModuleInterop": true,
+    "moduleResolution": "bundler",
     "skipLibCheck": true,
-    "target": "es2022",
-    "allowJs": true,
-    "resolveJsonModule": true,
-    "moduleDetection": "force",
-    "isolatedModules": true,
-    "verbatimModuleSyntax": true,
     "jsx": "react",
-    /* Strictness */
+    "isolatedModules": true,
     "strict": true,
-    "noUncheckedIndexedAccess": true,
-    "noImplicitOverride": true,
-
-    /* If transpiling with TypeScript: */
-    "module": "Preserve",
-
     "noEmit": true
-  }
+  },
+  "include": ["src"]
 }
