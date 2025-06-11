@@ -1,5 +1,11 @@
 # react-highlight-html
 
+## 1.0.5
+
+### Patch Changes
+
+- 71531eb: Re-publish after unpublish
+
 ## 1.0.4
 
 ### Patch Changes
