@@ -1,5 +1,11 @@
 # react-highlight-html
 
+## 1.0.4
+
+### Patch Changes
+
+- 7158495: "Fix publish conflict"
+
 ## 1.0.3
 
 ### Patch Changes
