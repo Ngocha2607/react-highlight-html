@@ -1,5 +1,11 @@
 # react-highlight-html
 
+## 1.0.3
+
+### Patch Changes
+
+- 5ce0557: Update Readme.md
+
 ## 1.0.2
 
 ### Patch Changes
