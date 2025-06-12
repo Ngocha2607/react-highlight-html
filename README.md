@@ -18,9 +18,10 @@ A React component that allows users to highlight text in HTML content, attach no
 
 npm install your-package-name
 
-# or
+or
 
 yarn add your-package-name
+
 ⚠️ Make sure to also install required peer dependencies like antd, react, and clsx if not already present.
 
 ## 🔧 Usage
