@@ -14,7 +14,8 @@
     "check-exports": "attw --pack . --ignore-rules=cjs-resolves-to-esm",
     "lint": "tsc",
     "local-release": "changeset version && changeset publish",
-    "prepublishOnly": "npm run ci"
+    "prepublishOnly": "npm run ci",
+    "dev": "vite"
   },
   "repository": {
     "type": "git",
@@ -40,13 +41,21 @@
   "devDependencies": {
     "@arethetypeswrong/cli": "^0.18.2",
     "@changesets/cli": "^2.29.4",
+    "@tailwindcss/postcss": "^4.1.10",
     "@types/node": "^24.0.0",
     "@types/react": "^19.1.7",
+    "@vitejs/plugin-react": "^4.6.0",
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.6",
     "prettier": "^3.5.3",
+    "tailwindcss": "^4.1.10",
     "tsup": "^8.5.0",
-    "typescript": "^5.8.3"
+    "tsx": "^4.20.3",
+    "typescript": "^5.8.3",
+    "vite": "^7.0.0"
   },
   "dependencies": {
+    "@funktechno/texthighlighter": "^2.1.2",
     "antd": "^5.26.0",
     "clsx": "^2.1.1",
     "react": "^19.1.0",

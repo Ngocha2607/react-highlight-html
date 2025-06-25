@@ -189,3 +189,56 @@ export function restoreHighlightsFromOffsetsPreserveHTML(
 
   return wrapper.innerHTML;
 }
+
+/**
+ * Hàm này tính thời gian chênh lệch giữa thời gian hiện tại và một dấu thời gian cho trước,
+ * và trả về một chuỗi định dạng người đọc có thể hiểu được, thể hiện khoảng thời gian trước đó.
+ * @param {string} date - Dấu thời gian cần so sánh với thời gian hiện tại
+ * @return {string} - Một chuỗi đã định dạng thể hiện sự chênh lệch thời gian
+ */
+export const calculateTimeAgo = (date: string): string => {
+  if (!date) {
+    return '';
+  }
+
+  const currentDateTime: Date = new Date();
+  const updatedDateTime: Date = new Date(date);
+
+  const currentUtcTime: number = Date.UTC(
+    currentDateTime.getUTCFullYear(),
+    currentDateTime.getUTCMonth(),
+    currentDateTime.getUTCDate(),
+    currentDateTime.getUTCHours(),
+    currentDateTime.getUTCMinutes(),
+    currentDateTime.getUTCSeconds(),
+    currentDateTime.getUTCMilliseconds(),
+  );
+
+  const timeDifference: number = currentUtcTime - updatedDateTime.getTime();
+
+  const secondsAgo = Math.floor(timeDifference / 1000);
+  if (secondsAgo < 60) {
+    return secondsAgo <= 0 ? 'just now' : `${secondsAgo} seconds ago`;
+  }
+
+  const minutesAgo = Math.floor(secondsAgo / 60);
+  if (minutesAgo < 60) {
+    return minutesAgo === 1 ? '1 min ago' : `${minutesAgo} mins ago`;
+  }
+
+  const hoursAgo = Math.floor(minutesAgo / 60);
+  if (hoursAgo < 24) {
+    return hoursAgo === 1 ? '1 hour ago' : `${hoursAgo} hours ago`;
+  }
+
+  const daysAgo = Math.floor(hoursAgo / 24);
+  if (daysAgo >= 1) {
+    const formatter = new Intl.DateTimeFormat('en-GB', {
+      day: 'numeric',
+      month: 'numeric',
+      year: 'numeric',
+    });
+    return `${formatter.format(updatedDateTime)}`;
+  }
+  return '';
+};
